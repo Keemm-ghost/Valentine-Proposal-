@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Valentine?</title>
+  <style>
+    :root { --pad: 18px; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #ffe3ee, #fff);
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+    .card {
+      width: min(520px, 92vw);
+      background: white;
+      border-radius: 24px;
+      padding: 28px 22px 22px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.12);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { margin: 0 0 18px; color: #444; }
+
+    .stage {
+      position: relative;
+      height: 210px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fff6fb, #ffffff);
+      border: 1px solid rgba(0,0,0,.06);
+      overflow: hidden;
+      touch-action: none; /* helps on mobile */
+    }
+
+    .btn {
+      position: absolute;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 0;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .08s ease;
+    }
+    .btn:active { transform: scale(.98); }
+
+    #yes {
+      left: 50%;
+      top: 62%;
+      transform: translate(-130%, -50%);
+      background: #ff3b7a;
+      color: white;
+    }
+    #no {
+      left: 50%;
+      top: 62%;
+      transform: translate(30%, -50%);
+      background: #f1f1f1;
+      color: #111;
+    }
+
+    .result {
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ff3b7a;
+      min-height: 24px;
+    }
+    .hint {
+      font-size: 13px;
+      color: #666;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Will you be my Valentine? 💘</h1>
+    <p>Choose wisely 😌</p>
+
+    <div class="stage" id="stage" aria-label="valentine choices">
+      <button class="btn" id="yes">Yes 💖</button>
+      <button class="btn" id="no">No 🙃</button>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="hint">Tip: On mobile, try tapping “No” 😉</div>
+  </div>
+
+  <script>
+    const stage = document.getElementById("stage");
+    const btnNo = document.getElementById("no");
+    const btnYes = document.getElementById("yes");
+    const result = document.getElementById("result");
+
+    // Put "No" somewhere random inside the stage
+    function moveNo() {
+      const pad = 12;
+
+      const stageRect = stage.getBoundingClientRect();
+      const noRect = btnNo.getBoundingClientRect();
+
+      const maxX = stageRect.width - noRect.width - pad;
+      const maxY = stageRect.height - noRect.height - pad;
+
+      const x = pad + Math.random() * Math.max(0, maxX - pad);
+      const y = pad + Math.random() * Math.max(0, maxY - pad);
+
+      btnNo.style.left = x + "px";
+      btnNo.style.top = y + "px";
+      btnNo.style.transform = "translate(0,0)";
+    }
+
+    // If mouse gets near "No", move it away
+    function onPointerMove(e) {
+      const noRect = btnNo.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+
+      // pointer position
+      const px = e.clientX;
+      const py = e.clientY;
+
+      // distance to center of "No"
+      const cx = noRect.left + noRect.width / 2;
+      const cy = noRect.top + noRect.height / 2;
+
+      const dx = px - cx;
+      const dy = py - cy;
+      const dist = Math.hypot(dx, dy);
+
+      // If within 90px, run away
+      if (dist < 90) moveNo();
+    }
+
+    // Desktop hover and mobile touch should both trigger
+    btnNo.addEventListener("mouseenter", moveNo);
+    btnNo.addEventListener("pointerdown", (e) => { e.preventDefault(); moveNo(); });
+    stage.addEventListener("pointermove", onPointerMove);
+
+    btnYes.addEventListener("click", () => {
+      result.textContent = "Yayyy! 💞 See you on Valentine’s 😍";
+      // optional: disable running away after yes
+      stage.removeEventListener("pointermove", onPointerMove);
+      btnNo.disabled = true;
+      btnNo.style.opacity = 0.6;
+      btnNo.style.cursor = "not-allowed";
+    });
+
+    // Make sure "No" starts in a valid random spot after load
+    window.addEventListener("load", () => {
+      // Convert initial absolute positions to random ones
+      btnNo.style.position = "absolute";
+      btnYes.style.position = "absolute";
+      // Place Yes nicely:
+      btnYes.style.left = "30%";
+      btnYes.style.top  = "60%";
+      btnYes.style.transform = "translate(-50%, -50%)";
+      // Randomize No:
+      moveNo();
+    });
+  </script>
+</body>
+</html>
